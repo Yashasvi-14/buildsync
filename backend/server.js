@@ -1,10 +1,12 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { connectDB } from "./config/db";
+import { connectDB } from "./config/db.js";
 import testRoutes from "./routes/testRoutes.js";
 import { notFound,errorHandler } from "./middleware/errorMiddleware.js";
+
+dotenv.config();
 
 const app=express();
 
@@ -29,7 +31,7 @@ app.use(errorHandler);
 const PORT=process.env.PORT || 5000;
 
 const start = async () => {
-    await connectDB;
+    await connectDB();
     app.listen(PORT, () => {
         console.log(`Server listening on http://localhost:${PORT}`);
     });
