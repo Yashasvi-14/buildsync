@@ -6,6 +6,7 @@ import { connectDB } from "./config/db.js";
 import testRoutes from "./routes/testRoutes.js";
 import { notFound,errorHandler } from "./middleware/errorMiddleware.js";
 import userRoutes from './routes/userRoutes.js';
+import buildingRoutes from './routes/buildingRoutes.js';
 
 
 dotenv.config();
@@ -28,6 +29,7 @@ app.get("/api/ping" , (req,res)=>{
 app.use("/api", testRoutes);
 
 app.use('/api/users', userRoutes);
+app.use('/api/buildings', buildingRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
