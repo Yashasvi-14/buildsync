@@ -24,3 +24,17 @@ export const createBuilding = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * @desc    Get all buildings
+ * @route   GET /api/buildings
+ * @access  Private (Admin/Manager only)
+ */
+export const getBuildings = async (req, res, next) => {
+    try {
+        const buildings = await Building.find({}).populate('manager','name email');
+        res.status(200).json(buildings);
+    } catch(error) {
+        next(error);
+    }
+};
