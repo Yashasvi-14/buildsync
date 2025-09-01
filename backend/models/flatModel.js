@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import Building from "./buildingModel";
+import Building from "./buildingModel.js";
 
 const flatSchema = new mongoose.Schema(
     {
