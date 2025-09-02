@@ -30,3 +30,22 @@ export const addFlat = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * @desc    Get all flats for a specific building
+ * @route   GET /api/buildings/:buildingId/flats
+ * @access  Private (Admin/Manager of the building)
+ */
+export const getFlatsForBuilding = async (req, res, next) => {
+    try {
+        const { buildingId } = req.params;
+        const flats = await Flat.find({building: buildingId}).populate(
+            'resident',
+            'name email'
+        );
+        res.status(200).json(flats);
+
+    } catch(error) {
+        next(error);
+    }
+};
