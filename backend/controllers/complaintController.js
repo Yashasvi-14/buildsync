@@ -1,3 +1,4 @@
+import Building from "../models/buildingModel.js";
 import Complaint from "../models/complaintModel.js";
 import Flat from "../models/flatModel.js";
 
@@ -35,6 +36,44 @@ export const raiseComplaint = async(req, res, next) => {
         });
 
         res.status(201).json(complaint);
+    } catch(error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Get complaints based on user role
+ * @route   GET /api/complaints
+ * @access  Private
+ */
+export const getComplaints = async (req, res, next) => {
+    try{
+        let complaints;
+        const userRole = req.user.role;
+        const userId=req.user._id;
+
+        if(userRole === 'resident'){
+            complaints = await Complaint.find({ raisedBy: userId})
+            .populate('flat', 'flatNumber')
+            .populate('building', 'name');
+        }
+        else if (userRole === 'manager') {
+            const managedBuildings = await Building.find({manager: userId});
+
+            const buildingIds = managedBuildings.map ( b=> b._id);
+
+            complaints = await Complaint.find({ building: {$in: buildingIds} })
+                .populate('raisedBy', 'name')
+                .populate('flat', 'flatNumber');
+        }
+        else if(userRole === 'admin') {
+            complaints = await Complaint.find({})
+                .populate('raisedBy', 'name')
+                .populate('flat', 'flatNumber')
+                .populate('building', 'name');
+        }
+
+        res.status(200).json(complaints);
     } catch(error) {
         next(error);
     }
