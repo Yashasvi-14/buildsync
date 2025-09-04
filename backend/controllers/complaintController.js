@@ -78,3 +78,42 @@ export const getComplaints = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * @desc    Update a complaint's status
+ * @route   PUT /api/complaints/:complaintId
+ * @access  Private (Admin/Manager only)
+ */
+export const updateComplaintStatus = async (req, res, next) => {
+    try{
+        const { complaintId } = req.params;
+        const { status } = req.body;
+        const user = req.user; 
+
+        const validStatuses = ['Pending', 'In Progress', 'Resolved', 'Closed'];
+
+        if(!status || !validStatuses.includes(status)) {
+            return res.status(400).json({ message: 'Please provide a valid status'});
+        }
+
+        const complaint = await Complaint.findById(complaintId);
+        if(!complaint) {
+            return res.status(404).json({message: 'Complaint not found'});
+        }
+
+        if(user.role === 'manager') {
+            const managedBuildings = await Building.find({ manager: user._id});
+            const managedBuildingsIds = managedBuildings.map(b => b._id.toString());
+            if(!managedBuildingsIds.includes(complaint.building.toString())) {
+                return res.status(403).json({ message: 'You are not authorized to update this complaint'});
+            }
+        }
+
+        complaint.status = status;
+        await complaint.save();
+
+        res.status(200).json(complaint);
+    } catch(error) {
+        next(error);
+    }
+};

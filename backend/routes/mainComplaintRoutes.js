@@ -1,10 +1,12 @@
 import express from 'express';
-import { getComplaints } from '../controllers/complaintController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { getComplaints , updateComplaintStatus} from '../controllers/complaintController.js';
+import { authorize, protect } from '../middleware/authMiddleware.js';
 import { get } from 'mongoose';
 
 const router = express.Router();
 
 router.get('/', protect, getComplaints);
+
+router.put('/:complaintId', protect, authorize('admin', 'manager'), updateComplaintStatus);
 
 export default router;
