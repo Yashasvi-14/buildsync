@@ -1,6 +1,7 @@
 import Building from "../models/buildingModel.js";
 import Complaint from "../models/complaintModel.js";
 import Flat from "../models/flatModel.js";
+import User from "../models/User.js";
 
 /**
  * @desc    Raise a new complaint for a flat
@@ -114,6 +115,53 @@ export const updateComplaintStatus = async (req, res, next) => {
 
         res.status(200).json(complaint);
     } catch(error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Assign a complaint to a staff member
+ * @route   PUT /api/complaints/:complaintId/assign
+ * @access  Private (Admin/Manager only)
+ */
+export const assignComplaintToStaff = async(req, res, next) => {
+    try {
+        const { complaintId } = req.params;
+        const{staffId} = req.body;
+        const user = req.user;
+
+        if(!staffId) {
+            return res.status(400).json({message: 'Staff ID is required'});
+        }
+
+        const complaint = await Complaint.findById(complaintId);
+        if(!complaint) {
+            return res.status(404).json({message: 'Complaint not found'});
+        }
+
+        const staffMember = await User.findById(staffId);
+        if(!staffMember || staffMember.role !== 'staff') {
+            return res.status(404).json({message: 'Staff member not found or user is not a staff'});
+        }
+
+        if(user.role === 'manager') {
+            const managedBuildings = await Building.find({manager: user._id});
+            const managedBuildingsIds = managedBuildings.map( b => b._id.toString());
+            if(!managedBuildingsIds.includes(complaint.building.toString())) {
+                return res.status(403).json({message: 'You are not authorized to manage this complaint'});
+            }
+        }
+
+        complaint.assignedTo = staffId;
+        complaint.status = 'In Progress';
+        await complaint.save();
+
+        const populatedComplaint = await Complaint.findById(complaintId)
+            .populate('raisedBy', 'name')
+            .populate('assignedTo', 'name email');
+
+        res.status(200).json(populatedComplaint);
+    } catch (error) {
         next(error);
     }
 };
