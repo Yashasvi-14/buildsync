@@ -43,3 +43,38 @@ export const deleteUser = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * @desc    Update a user's role
+ * @route   PUT /api/admin/users/:userId
+ * @access  Private (Admin only)
+ */
+export const updateUserRole = async(req, res, next) => {
+    try{
+        const { role } = req.body;
+        const user = await User.findById(req.params.userId);
+
+        const validRoles = ['admin', 'manager', 'resident', 'staff'];
+        if(!role || !validRoles.includes(role)){
+            return res.status(400).json({ message: 'Please provide a valid role'});
+        }
+
+        if(!user) {
+            return res.status(404).json({message: 'User not found'});
+        }
+
+        if(user._id.toString() === req.user._id.toString()) {
+            return res.status(400).json({message: 'Admin cannot change their own role'});
+        }
+
+        user.role=role;
+        await user.save();
+
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
+        res.status(200).json(userResponse);
+    } catch(error) {
+        next(error);
+    }
+};

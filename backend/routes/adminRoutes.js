@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllUsers, deleteUser} from '../controllers/adminController.js';
+import { getAllUsers, deleteUser, updateUserRole} from '../controllers/adminController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -10,6 +10,7 @@ router
 
 router
     .route('/users/:userId')
-    .delete(protect, authorize('admin'), deleteUser);
+    .delete(protect, authorize('admin'), deleteUser)
+    .put(protect,authorize('admin'), updateUserRole);
 
 export default router;
