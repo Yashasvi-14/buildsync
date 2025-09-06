@@ -8,6 +8,7 @@ import { notFound,errorHandler } from "./middleware/errorMiddleware.js";
 import userRoutes from './routes/userRoutes.js';
 import buildingRoutes from './routes/buildingRoutes.js';
 import mainComplaintRoutes from './routes/mainComplaintRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 
 dotenv.config();
@@ -33,6 +34,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/buildings', buildingRoutes);
 
 app.use('/api/complaints', mainComplaintRoutes);
+
+app.use('/api/admin', adminRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
