@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -9,9 +10,8 @@ import userRoutes from './routes/userRoutes.js';
 import buildingRoutes from './routes/buildingRoutes.js';
 import mainComplaintRoutes from './routes/mainComplaintRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
-
-dotenv.config();
 
 const app=express();
 
@@ -31,11 +31,14 @@ app.get("/api/ping" , (req,res)=>{
 app.use("/api", testRoutes);
 
 app.use('/api/users', userRoutes);
+
 app.use('/api/buildings', buildingRoutes);
 
 app.use('/api/complaints', mainComplaintRoutes);
 
 app.use('/api/admin', adminRoutes);
+
+app.use('/api/payments', paymentRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
