@@ -2,7 +2,7 @@ import User from "../models/User.js";
 import bcrypt from 'bcryptjs';
 
 import jwt from 'jsonwebtoken';
-
+import { v2 as cloudinary } from 'cloudinary';
 /**
  * @desc    Register a new user
  * @route   POST /api/users/register
@@ -98,5 +98,35 @@ export const getUserProfile = async(req, res) => {
         });
     } else {
         res.status(404).json({message: 'User not found'});
+    }
+};
+
+/**
+ * @desc    Upload or update user profile picture
+ * @route   PUT /api/users/profile/picture
+ * @access  Private
+ */
+export const uploadProfilePictures = async (req, res, next) => {
+    try {
+        if(!req.file) {
+            return res.status(400).json({message: 'No file uploaded.'});
+        }
+
+        const b64 = Buffer.from(req.file.buffer).toString('base64');
+        let dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
+
+        const result = await cloudinary.uploader.upload(dataURI, {
+            folder: 'buildsync_profiles',
+        });
+
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            { profilePicture: result.secure_url },
+            { new: true, runValidaters: true }
+        ).select('-password');
+
+        res.status(200).json(user);
+    } catch (error) {
+        next(error);
     }
 };
