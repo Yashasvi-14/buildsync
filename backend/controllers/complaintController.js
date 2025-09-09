@@ -36,6 +36,14 @@ export const raiseComplaint = async(req, res, next) => {
             building: flat.building,
         });
 
+        const populatedComplaint = await Complaint.findById(complaint._id)
+            .populate('raisedBy', 'name')
+            .populate('flat', 'flatNumber')
+            .populated('building', 'name');
+
+        const io = req.app.get('socketio');
+        io.emit('newComplaint', populatedComplaint);
+
         res.status(201).json(complaint);
     } catch(error) {
         next(error);

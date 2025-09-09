@@ -1,8 +1,12 @@
+import express from "express";
+import http from 'http';
+import { Server } from 'socket.io';
+
 import dotenv from "dotenv";
 dotenv.config();
 import connectCloudinary from "./config/cloudinaryConfig.js";
 connectCloudinary();
-import express from "express";
+
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.js";
@@ -45,11 +49,30 @@ app.use('/api/payments', paymentRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
+const httpServer = http.createServer(app);
+
+const io = new Server( httpServer, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST'],
+    },
+});
+
+app.set('socketio', io);
+
+io.on('connection', (socket) => {
+    console.log(`New client connected: ${socket.id}`);
+
+    socket.on('disconnect', () => {
+        console.log(`Client disconnected: ${socket.id}`);
+    });
+});
+
 const PORT=process.env.PORT || 5000;
 
 const start = async () => {
     await connectDB();
-    app.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
         console.log(`Server listening on http://localhost:${PORT}`);
     });
 };
