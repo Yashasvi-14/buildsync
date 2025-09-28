@@ -1,7 +1,7 @@
 function App() {
   return (
-    <div>
-      <h1>BuildSync Frontend</h1>
+    <div className="text-3xl font-bold text-blue-500">
+      BuildSync Frontend
     </div>
   );
 }
