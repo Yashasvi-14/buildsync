@@ -1,7 +1,13 @@
+import { Outlet } from "react-router-dom";
+
 function App() {
   return (
-    <div className="text-3xl font-bold text-blue-500">
-      BuildSync Frontend
+    <div>
+      {/* A header or navbar could go here later */}
+      <main className="p-4">
+        <Outlet /> {/* Page content will be rendered here */}
+      </main>
+      {/* A footer could go here later */}
     </div>
   );
 }
