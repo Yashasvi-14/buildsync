@@ -1,15 +1,21 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { loginSuccess } from "../store/authSlice";
 import authService from "../services/authService";
 
 const LoginPage = () => {
     const[email, setEmail] = useState('');
     const[password, setPassword] = useState('');
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const handleSubmit = async(e) => {
         e.preventDefault();
         try{
             const userData = await authService.login(email, password);
-            console.log('Login Successful!');
+            dispatch(loginSuccess(userData));
+            navigate('/');
         } catch(error)
         {
             console.error('Login Failed:', error);
