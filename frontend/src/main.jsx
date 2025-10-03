@@ -9,6 +9,7 @@ import './index.css';
 // Import your page components
 import HomePage from './pages/HomePage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
+import PrivateRoute from './components/PrivateRoute.jsx';
 
 // Create the router configuration
 const router = createBrowserRouter([
@@ -17,12 +18,19 @@ const router = createBrowserRouter([
     element: <App />, // App is the main layout component
     children: [
       {
-        index: true, // This makes HomePage the default child for the '/' path
-        element: <HomePage />,
-      },
-      {
         path: '/login',
         element: <LoginPage />,
+      },
+
+      {
+        path: '',
+        element: <PrivateRoute />,
+        children: [
+          {
+            index: true,
+            element: <HomePage />,
+          },
+        ],
       },
     ],
   },
