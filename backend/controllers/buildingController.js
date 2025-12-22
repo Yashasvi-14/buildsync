@@ -16,7 +16,7 @@ export const createBuilding = async (req, res, next) => {
         const building = await Building.create({
             name,
             address,
-            manager: req.user._id,
+            manager: req.user.role === 'manager'?req.user._id:null,
         });
 
         res.status(201).json(building);
