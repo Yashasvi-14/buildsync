@@ -62,7 +62,7 @@ export const assignResidentToFlat = async (req, res, next) => {
         const { residentId } = req.body;
 
         if(!residentId) {
-            return res.status(400).json({ messag: 'Resident ID is required '});
+            return res.status(400).json({ message: 'Resident ID is required '});
         }
 
         const flat = await Flat.findById(flatId);
