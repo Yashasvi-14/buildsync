@@ -1,6 +1,8 @@
 import express from "express";
 import http from 'http';
 import { Server } from 'socket.io';
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -28,6 +30,16 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+app.use(helmet());
+const limiter=rateLimit({
+    windowMs: 1*60*1000,
+    max: 100,
+    standardHeaders:true,
+    legacyHeaders: false,
+
+});
+app.use(limiter);
 app.use(cookieParser());
 
 app.get("/api/ping" , (req,res)=>{
