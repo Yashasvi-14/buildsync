@@ -16,6 +16,9 @@ import testRoutes from "./routes/testRoutes.js";
 import { notFound,errorHandler } from "./middleware/errorMiddleware.js";
 import userRoutes from './routes/userRoutes.js';
 import buildingRoutes from './routes/buildingRoutes.js';
+
+import residentComplaintRoutes from './routes/residentComplaintRoutes.js';
+
 import mainComplaintRoutes from './routes/mainComplaintRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
@@ -51,6 +54,8 @@ app.use("/api", testRoutes);
 app.use('/api/users', userRoutes);
 
 app.use('/api/buildings', buildingRoutes);
+
+app.use('/api/complaints', residentComplaintRoutes);
 
 app.use('/api/complaints', mainComplaintRoutes);
 
