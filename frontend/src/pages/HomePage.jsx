@@ -7,6 +7,8 @@ const HomePage = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
+  const [profile, setProfile] = useState(null);
+
   const { token, user } = useSelector((state) => state.auth);
 
   const fetchComplaints = async () => {
@@ -23,7 +25,19 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    fetchComplaints();
+    const fetchData = async () => {
+    try {
+      const res = await API.get("/users/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProfile(res.data);
+      fetchComplaints();
+    } catch (error) {
+      console.error("Failed to fetch user profile");
+    }
+  };
+
+  fetchData();
   }, [token]);
 
   const handleSubmit = async (e) => {
@@ -49,6 +63,14 @@ const HomePage = () => {
   return (
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4">Complaints</h1>
+      {profile && (
+        <div className="mb-4 p-3 bg-gray-100 border rounded">
+            <p className="text-sm text-gray-700">
+                Logged in as: <b>{profile.name}</b> ({profile.role})
+            </p>
+        </div>
+      )}
+
 
       {user?.role === "resident" && (
         <form onSubmit={handleSubmit} className="mb-6 space-y-2">
