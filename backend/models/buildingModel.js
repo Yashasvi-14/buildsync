@@ -19,7 +19,6 @@ const buildingSchema = new mongoose.Schema(
         buildingCode: {
             type: String,
             unique: true,
-            //required: true,
         },
     },
     {
