@@ -70,8 +70,22 @@ const HomePage = () => {
             </p>
         </div>
       )}
+      {profile?.role === "manager" && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded">
+          <p className="text-sm text-yellow-800">
+            Manager Mode: Viewing complaints from buildings you manage.
+          </p>
+        </div>
+      )}
 
-
+      {profile?.role === "admin" && (
+        <div className="mb-4 p-3 bg-purple-50 border border-purple-300 rounded">
+          <p className="text-sm text-purple-800">
+            Admin Mode: Viewing all complaints in the system.
+          </p>
+        </div>
+      )}
+      
       {user?.role === "resident" && (
         <form onSubmit={handleSubmit} className="mb-6 space-y-2">
           <input
