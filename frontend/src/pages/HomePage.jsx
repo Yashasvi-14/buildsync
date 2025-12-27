@@ -123,12 +123,44 @@ const HomePage = () => {
               <p className="text-xs text-gray-500 mt-1">
                 Status: {c.status || "Pending"}
               </p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-};
+              {(profile?.role === "manager" || profile?.role === "admin") && (
+                <div className="mt-2">
+                  <select
+                  onChange={(e) => c.newStatus = e.target.value}
+                  defaultValue={c.status || "Pending"}
+                  className="border p-1 rounded mr-2"
+                  >
+                    <option>Pending</option>
+                    <option>In Progress</option>
+                    <option>Resolved</option>
+                    <option>Closed</option>
+                    </select>
+                    
+                    <button
+                    onClick={async () => {
+                      try {
+                        await API.put(
+                          `/complaints/${c._id}`,
+                          { status: c.newStatus || c.status },
+                          { headers: { Authorization: `Bearer ${token}` } }
+                        );
+                        fetchComplaints();
+                      } catch (error) {
+                        console.error("Status update failed", error);
+                      }
+                    }}
+                    className="px-3 py-1 bg-green-600 text-white rounded"
+                    >
+                      Update
+                      </button>
+                  </div>
+                )}
+                </li>
+              ))}
+              </ul>
+            )}
+            </div>
+            )
+          };
 
 export default HomePage;
