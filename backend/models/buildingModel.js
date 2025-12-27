@@ -16,12 +16,25 @@ const buildingSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
+        buildingCode: {
+            type: String,
+            unique: true,
+            //required: true,
+        },
     },
     {
         timestamps: true,
     }
 );
-
+// Generate unique building code before saving
+buildingSchema.pre("save", function (next) {
+  if (!this.buildingCode) {
+    const prefix = this.name.substring(0, 3).toUpperCase();
+    const random = Math.floor(100 + Math.random() * 900);
+    this.buildingCode = `${prefix}${random}`;
+  }
+  next();
+});
 const Building = mongoose.model('Building', buildingSchema);
 
 export default Building;
