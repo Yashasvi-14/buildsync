@@ -27,9 +27,21 @@ const userSchema = mongoose.Schema(
             enum: ["resident", "manager", "admin", "staff"],
             default: "resident",
         },
+
         profilePicture: {
             type: String,
             default: '',
+        },
+
+        pendingBuilding: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Building",
+            default: null,
+        },
+        
+        isApproved: {
+            type: Boolean,
+            default: false,
         },
     },
     {
