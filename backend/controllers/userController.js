@@ -1,6 +1,6 @@
 import User from "../models/User.js";
 import bcrypt from 'bcryptjs';
-
+import Building from "../models/buildingModel.js";
 import jwt from 'jsonwebtoken';
 import { v2 as cloudinary } from 'cloudinary';
 /**
@@ -10,7 +10,7 @@ import { v2 as cloudinary } from 'cloudinary';
  */
 export const registerUser = async (req, res, next) => {
     try{
-        const { name, email, password}=req.body;
+        const { name, email, password, role, buildingCode }=req.body;
 
         if(!name || !email || !password) {
             return res.status(400).json({message: "Please enter all fields"});
@@ -25,10 +25,27 @@ export const registerUser = async (req, res, next) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // If user is staff or resident, buildingCode is required
+        let pendingBuilding = null;
+        if (role === "staff" || role === "resident") {
+            if (!buildingCode) {
+                return res.status(400).json({ message: "Building code is required" });
+            }
+            const building = await Building.findOne({ buildingCode: buildingCode.toUpperCase() });
+            if (!building) {
+                return res.status(400).json({ message: "Invalid building code" });
+            }
+            pendingBuilding = building._id;
+        }
+
+
         const newUser = await User.create({
             name,
             email,
             password: hashedPassword,
+            role: role || "resident",
+            pendingBuilding,
+            isApproved: role === "admin" || role ==="manager"? true:false,
         });
 
         if(newUser) {
@@ -37,6 +54,8 @@ export const registerUser = async (req, res, next) => {
                 name: newUser.name,
                 email: newUser.email,
                 role: newUser.role,
+                pendingBuilding: newUser.pendingBuilding,
+                isApproved: newUser.isApproved,
             });
         } else {
             res.status(400).json({message: "Invalid user data"});
