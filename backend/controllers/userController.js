@@ -149,3 +149,43 @@ export const uploadProfilePictures = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * @desc    Get all users pending approval
+ * @route   GET /api/admin/pending-users
+ * @access  Private (Admin, Manager)
+ */
+export const getPendingUsers = async (req, res, next) => {
+    try{
+        const users=await User.find({ isApproved: false}).populate("pendingBuilding", "name");
+        res.json(users);
+    } catch(error) {
+        next(error);
+    }
+};
+
+/**
+ * @desc    Approve a pending user and assign building
+ * @route   PATCH /api/admin/approve-user/:id
+ * @access  Private (Admin, Manager)
+ */
+export const approveUser = async(req, res, next) => {
+    try{
+        const user = await User.findById(req.params.id);
+
+        if(!user) {
+            return res.status(404).json({ message: "User not found"});
+        }
+
+        user.isApproved = true;
+        user.assignedBuilding = user.pendingBuilding;
+        user.pendingBuilding = null;
+
+        await user.save();
+
+        res.json({ message: "User approved successfully"});
+    } catch(error) {
+        next(error);
+    }
+};
+

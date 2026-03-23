@@ -38,10 +38,16 @@ const userSchema = mongoose.Schema(
             ref: "Building",
             default: null,
         },
-        
+
         isApproved: {
             type: Boolean,
             default: false,
+        },
+
+        assignedBuilding: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Building",
+            default: null,
         },
     },
     {
