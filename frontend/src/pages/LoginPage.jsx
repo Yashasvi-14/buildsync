@@ -18,8 +18,14 @@ const LoginPage = () => {
             navigate('/');
         } catch(error)
         {
-            console.error('Login Failed:', error);
-            alert('Login Failed! Check credentials.');
+            console.error("Login error full:", error);
+
+    if (error.response) {
+        console.error("Backend response:", error.response.data);
+        alert(error.response.data.message || "Login failed");
+    } else {
+        alert("Network / CORS error — backend not reachable");
+    }
         }
     };
 
@@ -61,10 +67,17 @@ const LoginPage = () => {
                     {/* Submit Button */}
                     <button
                         type="submit"
-                        className="w-full py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className="w-full py-2 text-white bg-primary rounded-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                         Login
                     </button>
+
+                    <p className="mt-4 text-center text-sm">
+                        Don’t have an account?{" "}
+                        <span onClick={() => navigate("/register")} className="text-blue-600 cursor-pointer">
+                            Register
+                        </span>
+                    </p>
                 </form>
             </div>
         </div>

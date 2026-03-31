@@ -7,28 +7,44 @@ import App from './App.jsx';
 import './index.css';
 
 // Import your page components
+import DashboardLayout from "./layouts/DashboardLayout";
 import HomePage from './pages/HomePage.jsx';
+import RegisterPage from "./pages/RegisterPage";
 import LoginPage from './pages/LoginPage.jsx';
+import UsersPage from './pages/UsersPage.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 
 // Create the router configuration
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />, // App is the main layout component
+    element: <App />,
     children: [
       {
         path: '/login',
         element: <LoginPage />,
       },
-
       {
-        path: '',
+        path: '/register',
+        element: <RegisterPage />,
+      },
+
+      // Protected routes
+      {
         element: <PrivateRoute />,
         children: [
           {
-            index: true,
-            element: <HomePage />,
+            element: <DashboardLayout />,
+            children: [
+              {
+                index: true,
+                element: <HomePage />,
+              },
+              {
+                path: 'users',
+                element: <UsersPage />,
+              },
+            ],
           },
         ],
       },

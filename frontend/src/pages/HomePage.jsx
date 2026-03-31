@@ -8,6 +8,7 @@ const HomePage = () => {
   const [description, setDescription] = useState("");
 
   const [profile, setProfile] = useState(null);
+  const [staff, setStaff] = useState([]);
 
   const { token, user } = useSelector((state) => state.auth);
 
@@ -31,6 +32,16 @@ const HomePage = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProfile(res.data);
+      if (res.data.role === "manager" || res.data.role === "admin") {
+        try {
+          const res = await API.get("/users?role=staff", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setStaff(res.data);
+        } catch (error) {
+          console.error("Failed to fetch staff list");
+        }
+      }
       fetchComplaints();
     } catch (error) {
       console.error("Failed to fetch user profile");
@@ -152,15 +163,49 @@ const HomePage = () => {
                     className="px-3 py-1 bg-green-600 text-white rounded"
                     >
                       Update
-                      </button>
+                    </button>
+                </div>
+              )}
+                {(profile?.role === "manager" || profile?.role === "admin") && (
+                  <div className="mt-2">
+                    <select
+                    onChange={(e) => c.assignedTo = e.target.value}
+                    defaultValue={c.assignedTo || ""}
+                    className="border p-1 rounded mr-2"
+                    >
+                      <option value="">Assign to staff</option>
+                      {staff.map((member) => (
+                        <option key={member._id} value={member._id}>
+                          {member.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                    onClick={async () => {
+                      try {
+                        await API.put(
+                          `/complaints/${c._id}/assign`,
+                          { staffId: c.assignedTo },
+                          { headers: { Authorization: `Bearer ${token}` } }
+                        );
+                        fetchComplaints();
+                      } catch (error) {
+                        console.error("Staff assignment failed", error);
+                        alert("Failed to assign staff");
+                      }
+                    }}
+                    className="px-3 py-1 bg-blue-600 text-white rounded"
+                    >
+                      Assign
+                    </button>
                   </div>
                 )}
-                </li>
-              ))}
-              </ul>
-            )}
-            </div>
-            )
-          };
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    )
+  };
 
 export default HomePage;

@@ -1,17 +1,10 @@
 import { useSelector } from "react-redux";
-import { Navigate, Outlet} from 'react-router-dom';
-import DashboardLayout from "../layouts/DashboardLayout";
+import { Navigate, Outlet } from "react-router-dom";
 
 const PrivateRoute = () => {
-    const { token } = useSelector((state) => state.auth);
+  const { token } = useSelector((state) => state.auth);
 
-    return token ? (
-    <DashboardLayout>
-      <Outlet />
-    </DashboardLayout>
-  ) : (
-    <Navigate to="/login" replace />
-  );
+  return token ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export default PrivateRoute;

@@ -1,0 +1,41 @@
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "../store/authSlice";
+import { Home, User, LogOut } from 'lucide-react';
+
+const Sidebar = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const handleLogout = () => {
+        dispatch(logout());
+        navigate('/login');
+    };
+    return (
+    <div className="flex flex-col w-64 h-screen px-4 py-8 bg-white border-r">
+      <h2 className="text-3xl font-semibold text-foreground">BuildSync</h2>
+      <div className="flex flex-col justify-between flex-1 mt-6">
+        <nav>
+          <Link to="/" className="flex items-center px-4 py-2 text-white bg-primary rounded-md">
+            <Home className="w-5 h-5" /> {/* 2. Add Home icon */}
+            <span className="mx-4 font-medium">Home</span>
+          </Link>
+          <Link to="/profile" className="flex items-center px-4 py-2 mt-5 text-gray-600 rounded-md hover:bg-gray-100">
+            <User className="w-5 h-5" /> {/* 3. Add User icon */}
+            <span className="mx-4 font-medium">Profile</span>
+          </Link>
+        </nav>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center px-4 py-2 mt-5 text-gray-600 rounded-md hover:bg-gray-100"
+        >
+          <LogOut className="w-5 h-5" /> {/* 4. Add Logout icon */}
+          <span className="mx-4 font-medium">Logout</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;
