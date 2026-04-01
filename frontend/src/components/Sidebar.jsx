@@ -14,9 +14,9 @@ const Sidebar = () => {
     return (
     <div className="flex flex-col w-64 h-screen px-4 py-8 bg-white border-r">
       <h2 className="text-3xl font-semibold text-foreground">BuildSync</h2>
-      <div className="flex flex-col justify-between flex-1 mt-6">
+      <div className="flex flex-col justify-between h-full mt-6">
         <nav>
-          <Link to="/" className="flex items-center px-4 py-2 text-white bg-primary rounded-md">
+          <Link to="/" className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-md">
             <Home className="w-5 h-5" /> {/* 2. Add Home icon */}
             <span className="mx-4 font-medium">Home</span>
           </Link>
