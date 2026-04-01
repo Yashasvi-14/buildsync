@@ -2,6 +2,7 @@ import express from 'express';
 import { getAllUsers, deleteUser, updateUserRole} from '../controllers/adminController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 import { getPendingUsers, approveUser } from '../controllers/userController.js';
+import { getStaffUsers } from "../controllers/adminController.js";
 
 const router = express.Router();
 
@@ -13,6 +14,8 @@ router
     .route('/users/:userId')
     .delete(protect, authorize('admin'), deleteUser)
     .put(protect,authorize('admin'), updateUserRole);
+
+router.get('/staff', protect, authorize('admin', 'manager'), getStaffUsers);
 
 router.get("/pending-users", protect, authorize("admin", "manager"), getPendingUsers);
 

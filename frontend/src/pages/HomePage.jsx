@@ -37,6 +37,7 @@ const HomePage = () => {
           const res = await API.get("/users?role=staff", {
             headers: { Authorization: `Bearer ${token}` },
           });
+          console.log("Staff API response:", res.data);
           setStaff(res.data);
         } catch (error) {
           console.error("Failed to fetch staff list");

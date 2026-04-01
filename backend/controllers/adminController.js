@@ -78,3 +78,16 @@ export const updateUserRole = async(req, res, next) => {
         next(error);
     }
 };
+
+export const getStaffUsers = async (req, res, next) => {
+  try {
+    const staff = await User.find({
+      role: "staff",
+      isApproved: true,
+    }).select("name email");
+
+    res.status(200).json(staff);
+  } catch (error) {
+    next(error);
+  }
+};
