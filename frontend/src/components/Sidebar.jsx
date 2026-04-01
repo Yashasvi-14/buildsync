@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../store/authSlice";
-import { Home, User, LogOut } from 'lucide-react';
+import { Home, User, LogOut, Users } from 'lucide-react';
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -23,6 +23,13 @@ const Sidebar = () => {
           <Link to="/profile" className="flex items-center px-4 py-2 mt-5 text-gray-600 rounded-md hover:bg-gray-100">
             <User className="w-5 h-5" /> {/* 3. Add User icon */}
             <span className="mx-4 font-medium">Profile</span>
+          </Link>
+          <Link 
+          to="/users"
+          className="flex items-center px-4 py-2 mt-5 text-gray-600 rounded-md hover:bg-gray-100"
+          >
+            <Users className="w-5 h-5" />
+            <span className="mx-4 font-medium">Users</span>
           </Link>
         </nav>
 
