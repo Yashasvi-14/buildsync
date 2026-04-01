@@ -187,3 +187,42 @@ export const approveUser = async(req, res, next) => {
     }
 };
 
+export const getBuildingUsers = async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    let users;
+
+    // ADMIN → all users
+    if (user.role === "admin") {
+      users = await User.find({})
+        .populate("building", "name")
+        .select("-password");
+    }
+
+    // MANAGER → users of managed buildings
+    else if (user.role === "manager") {
+      const buildings = await Building.find({ manager: user._id });
+      const buildingIds = buildings.map((b) => b._id);
+
+      users = await User.find({
+        building: { $in: buildingIds },
+      })
+        .populate("building", "name")
+        .select("-password");
+    }
+
+    // RESIDENT → users of same building
+    else {
+      users = await User.find({
+        building: user.building,
+      })
+        .populate("building", "name")
+        .select("-password");
+    }
+
+    res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
