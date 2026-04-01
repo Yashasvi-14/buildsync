@@ -179,42 +179,63 @@ const HomePage = () => {
             <li key={c._id} className="p-4 border rounded bg-white shadow-sm">
               <p className="font-medium">{c.title}</p>
               <p className="text-sm text-gray-600">{c.description}</p>
+              <p className="text-sm text-gray-600 mt-1">
+                Assigned to:{" "}
+                <span className="font-medium">
+                  {c.assignedTo?.name || "Unassigned"}
+                </span>
+              </p>
               <p className="text-xs text-gray-500 mt-1">
                 Status: {c.status || "Pending"}
               </p>
+              
 
               {/* Status update */}
               {(profile?.role === "manager" ||
                 profile?.role === "admin") && (
-                <div className="mt-2 flex gap-2">
+                <div className="mt-2 flex gap-2 items-center">
                   <select
-                    onChange={(e) =>
-                      updateStatus(c._id, e.target.value)
-                    }
-                    defaultValue={c.status || "Pending"}
-                    className="border p-1 rounded"
+                  onChange={(e) =>
+                    setSelectedStaff((prev) => ({
+                      ...prev,
+                      [`status-${c._id}`]: e.target.value,
+                    }))
+                  }
+                  defaultValue={c.status || "Pending"}
+                  className="border p-1 rounded"
                   >
                     <option>Pending</option>
                     <option>In Progress</option>
                     <option>Resolved</option>
                     <option>Closed</option>
                   </select>
+                  <button
+                  onClick={() =>
+                    updateStatus(
+                      c._id,
+                      selectedStaff[`status-${c._id}`] || c.status
+                    )
+                  }
+                  className="px-3 py-1 bg-green-600 text-white rounded"
+                  >
+                    Update
+                  </button>
                 </div>
               )}
 
               {/* Assign staff */}
               {(profile?.role === "manager" ||
                 profile?.role === "admin") && (
-                <div className="mt-2 flex gap-2">
+                <div className="mt-2 flex gap-2 items-center">
                   <select
-                    onChange={(e) =>
-                      setSelectedStaff({
-                        ...selectedStaff,
-                        [c._id]: e.target.value,
-                      })
-                    }
-                    className="border p-1 rounded"
-                    defaultValue=""
+                  onChange={(e) =>
+                    setSelectedStaff({
+                      ...selectedStaff,
+                      [c._id]: e.target.value,
+                    })
+                  }
+                  className="border p-1 rounded"
+                  defaultValue=""
                   >
                     <option value="">Assign to staff</option>
                     {staff.map((member) => (
@@ -223,12 +244,11 @@ const HomePage = () => {
                       </option>
                     ))}
                   </select>
-
                   <button
                     onClick={() => assignStaff(c._id)}
                     className="px-3 py-1 bg-blue-600 text-white rounded"
-                  >
-                    Assign
+                    >
+                       Assign
                   </button>
                 </div>
               )}
