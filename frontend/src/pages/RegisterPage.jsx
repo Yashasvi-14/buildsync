@@ -50,6 +50,15 @@ const RegisterPage = () => {
             Register
           </button>
         </form>
+        <p className="mt-4 text-sm text-center text-gray-600">
+          Already have an account?{" "}
+          <span
+          onClick={() => navigate("/login")}
+          className="text-blue-600 cursor-pointer hover:underline"
+          >
+            Login
+          </span>
+        </p>
       </div>
     </div>
   );
