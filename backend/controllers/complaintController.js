@@ -74,11 +74,13 @@ export const getComplaints = async (req, res, next) => {
 
             complaints = await Complaint.find({ building: {$in: buildingIds} })
                 .populate('raisedBy', 'name')
+                .populate('assignedTo', 'name')
                 .populate('flat', 'flatNumber');
         }
         else if(userRole === 'admin') {
             complaints = await Complaint.find({})
                 .populate('raisedBy', 'name')
+                .populate('assignedTo', 'name')
                 .populate('flat', 'flatNumber')
                 .populate('building', 'name');
         }
