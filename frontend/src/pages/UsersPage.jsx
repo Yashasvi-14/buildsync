@@ -16,9 +16,22 @@ const UsersPage = () => {
       console.error("Failed to fetch users");
     }
   };
+  const fetchAllUsers = async () => {
+  try {
+    const res = await API.get("/users/building-users", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setAllUsers(res.data);
+  } catch (error) {
+    console.error("Failed to fetch users");
+  }
+};
+const [allUsers, setAllUsers] = useState([]);
+
 
   useEffect(() => {
     fetchUsers();
+    fetchAllUsers();
   }, []);
 
   const approveUser = async (id) => {
@@ -36,6 +49,7 @@ const UsersPage = () => {
     }
   };
 
+  
   return (
     <div>
       <h1 className="text-xl font-semibold mb-4">Pending Users</h1>
@@ -61,7 +75,29 @@ const UsersPage = () => {
           ))}
         </ul>
       )}
-    </div>
+
+      <h2 className="text-xl font-semibold mt-6 mb-4">All Users</h2>
+      {allUsers.length === 0 ? (
+        <p>No users found.</p>
+      ) : (
+      <div className="space-y-2">
+        {allUsers.map((user) => (
+          <div
+          key={user._id}
+          className="p-3 bg-white border rounded flex justify-between"
+          >
+          <div>
+              <p className="font-medium">{user.name}</p>
+              <p className="text-sm text-gray-500">{user.email}</p>
+            </div>
+            <span className="text-sm text-gray-600">
+              {user.role}
+            </span>
+            </div>
+          ))}
+          </div>
+        )}
+      </div>
   );
 };
 
