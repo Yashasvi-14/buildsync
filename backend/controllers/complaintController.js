@@ -62,9 +62,10 @@ export const getComplaints = async (req, res, next) => {
         const userId=req.user._id;
 
         if(userRole === 'resident'){
-            complaints = await Complaint.find({ raisedBy: userId})
-            .populate('flat', 'flatNumber')
-            .populate('building', 'name');
+            complaints = await Complaint.find({})
+            .populate('raisedBy', 'name')
+            .populate('assignedTo', 'name')
+            .populate('flat', 'flatNumber');
         }
         else if (userRole === 'manager') {
             const managedBuildings = await Building.find({manager: userId});
@@ -164,11 +165,10 @@ export const assignComplaintToStaff = async(req, res, next) => {
         complaint.status = 'In Progress';
         await complaint.save();
 
-        const populatedComplaint = await Complaint.findById(complaintId)
-            .populate('raisedBy', 'name')
-            .populate('assignedTo', 'name email');
-
-        res.status(200).json(populatedComplaint);
+        const updatedComplaint = await Complaint.findById(complaintId)
+        .populate('assignedTo', 'name email')
+        .populate('raisedBy', 'name');
+        res.status(200).json(updatedComplaint);
     } catch (error) {
         next(error);
     }
