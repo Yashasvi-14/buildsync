@@ -109,12 +109,10 @@ export const loginUser = async (req,res,next) => {
  */
 export const getUserProfile = async(req, res) => {
     if(req.user) {
-        res.json({
-            _id: req.user._id,
-            name: req.user.name,
-            email: req.user.email,
-            role: req.user.role,
-        });
+        const user = await User.findById(req.user._id)
+        .populate("building", "name")
+        .select("-password");
+        res.json(user);
     } else {
         res.status(404).json({message: 'User not found'});
     }

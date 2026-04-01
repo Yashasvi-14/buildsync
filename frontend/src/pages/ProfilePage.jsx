@@ -49,6 +49,10 @@ const ProfilePage = () => {
       <p className="mb-2">
         <b>Role:</b> {profile.role}
       </p>
+
+      <p className="mb-2">
+        <b>Building:</b> {profile.building?.name || "Not assigned"}
+      </p>
     </div>
   );
 };
