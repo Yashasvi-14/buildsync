@@ -28,10 +28,9 @@ const Sidebar = () => {
 
         <button
           onClick={handleLogout}
-          className="flex items-center px-4 py-2 mt-5 text-gray-600 rounded-md hover:bg-gray-100"
+          className="w-full mt-6 px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600 transition"
         >
-          <LogOut className="w-5 h-5" /> {/* 4. Add Logout icon */}
-          <span className="mx-4 font-medium">Logout</span>
+          Logout
         </button>
       </div>
     </div>
