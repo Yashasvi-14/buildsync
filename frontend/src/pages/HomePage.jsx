@@ -9,15 +9,14 @@ const HomePage = () => {
 
   const [profile, setProfile] = useState(null);
   const [staff, setStaff] = useState([]);
+  const [selectedStaff, setSelectedStaff] = useState({});
 
   const { token, user } = useSelector((state) => state.auth);
 
   const fetchComplaints = async () => {
     try {
       const res = await API.get("/complaints", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setComplaints(res.data);
     } catch (error) {
@@ -27,29 +26,40 @@ const HomePage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-    try {
-      const res = await API.get("/users/profile", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setProfile(res.data);
-      if (res.data.role === "manager" || res.data.role === "admin") {
-        try {
-          const res = await API.get("/users?role=staff", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          console.log("Staff API response:", res.data);
-          setStaff(res.data);
-        } catch (error) {
-          console.error("Failed to fetch staff list");
-        }
-      }
-      fetchComplaints();
-    } catch (error) {
-      console.error("Failed to fetch user profile");
-    }
-  };
+      try {
+        // Get profile
+        const profileRes = await API.get("/users/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProfile(profileRes.data);
 
-  fetchData();
+        // Get staff (ONLY for admin/manager)
+        if (
+          profileRes.data.role === "manager" ||
+          profileRes.data.role === "admin"
+        ) {
+          try {
+            const staffRes = await API.get("/admin/staff", {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+
+            console.log("STAFF RESPONSE:", staffRes.data); // 🔍 DEBUG
+            setStaff(staffRes.data);
+          } catch (error) {
+            console.error(
+              "Failed to fetch staff list",
+              error.response?.data || error.message
+            );
+          }
+        }
+
+        fetchComplaints();
+      } catch (error) {
+        console.error("Failed to fetch user profile", error);
+      }
+    };
+
+    fetchData();
   }, [token]);
 
   const handleSubmit = async (e) => {
@@ -59,9 +69,7 @@ const HomePage = () => {
         "/complaints",
         { title, description },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setTitle("");
@@ -72,32 +80,73 @@ const HomePage = () => {
     }
   };
 
+  const assignStaff = async (complaintId) => {
+    const staffId = selectedStaff[complaintId];
+
+    if (!staffId) {
+      alert("Please select a staff member");
+      return;
+    }
+
+    try {
+      await API.put(
+        `/complaints/${complaintId}/assign`,
+        { staffId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      fetchComplaints();
+    } catch (error) {
+      console.error(
+        "Staff assignment failed",
+        error.response?.data || error.message
+      );
+    }
+  };
+
+  const updateStatus = async (complaintId, status) => {
+    try {
+      await API.put(
+        `/complaints/${complaintId}`,
+        { status },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      fetchComplaints();
+    } catch (error) {
+      console.error("Status update failed", error);
+    }
+  };
+
   return (
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4">Complaints</h1>
+
+      {/* Profile */}
       {profile && (
         <div className="mb-4 p-3 bg-gray-100 border rounded">
-            <p className="text-sm text-gray-700">
-                Logged in as: <b>{profile.name}</b> ({profile.role})
-            </p>
+          <p className="text-sm text-gray-700">
+            Logged in as: <b>{profile.name}</b> ({profile.role})
+          </p>
         </div>
       )}
+
+      {/* Role banners */}
       {profile?.role === "manager" && (
         <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded">
-          <p className="text-sm text-yellow-800">
-            Manager Mode: Viewing complaints from buildings you manage.
-          </p>
+          Manager Mode
         </div>
       )}
 
       {profile?.role === "admin" && (
         <div className="mb-4 p-3 bg-purple-50 border border-purple-300 rounded">
-          <p className="text-sm text-purple-800">
-            Admin Mode: Viewing all complaints in the system.
-          </p>
+          Admin Mode
         </div>
       )}
-      
+
+      {/* Resident complaint form */}
       {user?.role === "resident" && (
         <form onSubmit={handleSubmit} className="mb-6 space-y-2">
           <input
@@ -115,98 +164,80 @@ const HomePage = () => {
             className="w-full border p-2 rounded"
             required
           />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded"
-          >
+          <button className="px-4 py-2 bg-blue-600 text-white rounded">
             Raise Complaint
           </button>
         </form>
       )}
 
+      {/* Complaints list */}
       {complaints.length === 0 ? (
         <p>No complaints found.</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {complaints.map((c) => (
-            <li key={c._id} className="p-3 border rounded">
+            <li key={c._id} className="p-4 border rounded bg-white shadow-sm">
               <p className="font-medium">{c.title}</p>
               <p className="text-sm text-gray-600">{c.description}</p>
               <p className="text-xs text-gray-500 mt-1">
                 Status: {c.status || "Pending"}
               </p>
-              {(profile?.role === "manager" || profile?.role === "admin") && (
-                <div className="mt-2">
+
+              {/* Status update */}
+              {(profile?.role === "manager" ||
+                profile?.role === "admin") && (
+                <div className="mt-2 flex gap-2">
                   <select
-                  onChange={(e) => c.newStatus = e.target.value}
-                  defaultValue={c.status || "Pending"}
-                  className="border p-1 rounded mr-2"
+                    onChange={(e) =>
+                      updateStatus(c._id, e.target.value)
+                    }
+                    defaultValue={c.status || "Pending"}
+                    className="border p-1 rounded"
                   >
                     <option>Pending</option>
                     <option>In Progress</option>
                     <option>Resolved</option>
                     <option>Closed</option>
-                    </select>
-                    
-                    <button
-                    onClick={async () => {
-                      try {
-                        await API.put(
-                          `/complaints/${c._id}`,
-                          { status: c.newStatus || c.status },
-                          { headers: { Authorization: `Bearer ${token}` } }
-                        );
-                        fetchComplaints();
-                      } catch (error) {
-                        console.error("Status update failed", error);
-                      }
-                    }}
-                    className="px-3 py-1 bg-green-600 text-white rounded"
-                    >
-                      Update
-                    </button>
+                  </select>
                 </div>
               )}
-                {(profile?.role === "manager" || profile?.role === "admin") && (
-                  <div className="mt-2">
-                    <select
-                    onChange={(e) => c.assignedTo = e.target.value}
-                    defaultValue={c.assignedTo || ""}
-                    className="border p-1 rounded mr-2"
-                    >
-                      <option value="">Assign to staff</option>
-                      {staff.map((member) => (
-                        <option key={member._id} value={member._id}>
-                          {member.name}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                    onClick={async () => {
-                      try {
-                        await API.put(
-                          `/complaints/${c._id}/assign`,
-                          { staffId: c.assignedTo },
-                          { headers: { Authorization: `Bearer ${token}` } }
-                        );
-                        fetchComplaints();
-                      } catch (error) {
-                        console.error("Staff assignment failed", error);
-                        alert("Failed to assign staff");
-                      }
-                    }}
+
+              {/* Assign staff */}
+              {(profile?.role === "manager" ||
+                profile?.role === "admin") && (
+                <div className="mt-2 flex gap-2">
+                  <select
+                    onChange={(e) =>
+                      setSelectedStaff({
+                        ...selectedStaff,
+                        [c._id]: e.target.value,
+                      })
+                    }
+                    className="border p-1 rounded"
+                    defaultValue=""
+                  >
+                    <option value="">Assign to staff</option>
+                    {staff.map((member) => (
+                      <option key={member._id} value={member._id}>
+                        {member.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    onClick={() => assignStaff(c._id)}
                     className="px-3 py-1 bg-blue-600 text-white rounded"
-                    >
-                      Assign
-                    </button>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    )
-  };
+                  >
+                    Assign
+                  </button>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
 
 export default HomePage;
