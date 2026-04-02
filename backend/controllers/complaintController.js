@@ -39,7 +39,7 @@ export const raiseComplaint = async(req, res, next) => {
         const populatedComplaint = await Complaint.findById(complaint._id)
             .populate('raisedBy', 'name')
             .populate('flat', 'flatNumber')
-            .populate('building', 'name');
+            .populate('assignedBuilding', 'name');
 
         const io = req.app.get('socketio');
         io.emit('newComplaint', populatedComplaint);
@@ -82,7 +82,7 @@ export const getComplaints = async (req, res, next) => {
                 .populate('raisedBy', 'name')
                 .populate('assignedTo', 'name')
                 .populate('flat', 'flatNumber')
-                .populate('building', 'name');
+                .populate('assignedBuilding', 'name');
         }
 
         res.status(200).json(complaints);

@@ -107,15 +107,21 @@ export const loginUser = async (req,res,next) => {
  * @route   GET /api/users/profile
  * @access  Private
  */
-export const getUserProfile = async(req, res) => {
-    if(req.user) {
-        const user = await User.findById(req.user._id)
-        .populate("building", "name")
-        .select("-password");
-        res.json(user);
-    } else {
-        res.status(404).json({message: 'User not found'});
+export const getUserProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .populate("assignedBuilding", "name")
+      .select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    res.json(user);
+  } catch (error) {
+    console.error("Profile error:", error.message); // 🔥 IMPORTANT
+    next(error);
+  }
 };
 
 /**
@@ -196,7 +202,7 @@ export const getBuildingUsers = async (req, res, next) => {
     // ADMIN → all users
     if (user.role === "admin") {
       users = await User.find({})
-        .populate("building", "name")
+        .populate("assignedBuilding", "name")
         .select("-password");
     }
 
@@ -206,18 +212,18 @@ export const getBuildingUsers = async (req, res, next) => {
       const buildingIds = buildings.map((b) => b._id);
 
       users = await User.find({
-        building: { $in: buildingIds },
+        assignedBuilding: { $in: buildingIds },  // ✅ FIXED
       })
-        .populate("building", "name")
+        .populate("assignedBuilding", "name")
         .select("-password");
     }
 
     // RESIDENT → users of same building
     else {
       users = await User.find({
-        building: user.building,
+        assignedBuilding: user.assignedBuilding, // ✅ FIXED
       })
-        .populate("building", "name")
+        .populate("assignedBuilding", "name")
         .select("-password");
     }
 
