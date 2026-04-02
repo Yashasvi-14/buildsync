@@ -29,6 +29,16 @@ const LoginPage = () => {
         }
     };
 
+    const handleDemoLogin = async (email) => {
+  try {
+    const userData = await authService.login(email, "123456");
+    dispatch(loginSuccess(userData));
+    navigate("/");
+  } catch (error) {
+    alert("Demo login failed");
+  }
+};
+
     return(
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="p-8 bg-white rounded-lg shadow-md w-96">
@@ -78,6 +88,33 @@ const LoginPage = () => {
                             Register
                         </span>
                     </p>
+
+                    <div className="mt-6">
+  <p className="text-center text-sm text-gray-500 mb-2">Demo Login</p>
+
+  <div className="flex flex-col gap-2">
+    <button
+      onClick={() => handleDemoLogin("yash1@example.com")}
+      className="w-full py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+    >
+      Login as Admin
+    </button>
+
+    <button
+      onClick={() => handleDemoLogin("manager-four@example.com")}
+      className="w-full py-2 bg-green-500 text-white rounded hover:bg-green-600"
+    >
+      Login as Manager
+    </button>
+
+    <button
+      onClick={() => handleDemoLogin("resident@demo.com")}
+      className="w-full py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+    >
+      Login as Resident
+    </button>
+  </div>
+</div>
                 </form>
             </div>
         </div>
