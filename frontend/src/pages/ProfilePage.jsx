@@ -51,7 +51,7 @@ const ProfilePage = () => {
       </p>
 
       <p className="mb-2">
-        <b>Building:</b> {profile.building?.name || "Not assigned"}
+        <b>Building:</b> {profile.assignedBuilding?.name || "Not assigned"}
       </p>
     </div>
   );

@@ -39,7 +39,7 @@ export const raiseComplaint = async(req, res, next) => {
         const populatedComplaint = await Complaint.findById(complaint._id)
             .populate('raisedBy', 'name')
             .populate('flat', 'flatNumber')
-            .populate('assignedBuilding', 'name');
+            .populate('building', 'name');
 
         const io = req.app.get('socketio');
         io.emit('newComplaint', populatedComplaint);
@@ -56,39 +56,42 @@ export const raiseComplaint = async(req, res, next) => {
  * @access  Private
  */
 export const getComplaints = async (req, res, next) => {
-    try{
-        let complaints;
-        const userRole = req.user.role;
-        const userId=req.user._id;
+  try {
+    let complaints;
+    const userRole = req.user.role;
+    const userId = req.user._id;
 
-        if(userRole === 'resident'){
-            complaints = await Complaint.find({})
-            .populate('raisedBy', 'name')
-            .populate('assignedTo', 'name')
-            .populate('flat', 'flatNumber');
-        }
-        else if (userRole === 'manager') {
-            const managedBuildings = await Building.find({manager: userId});
-
-            const buildingIds = managedBuildings.map ( b=> b._id);
-
-            complaints = await Complaint.find({ building: {$in: buildingIds} })
-                .populate('raisedBy', 'name')
-                .populate('assignedTo', 'name')
-                .populate('flat', 'flatNumber');
-        }
-        else if(userRole === 'admin') {
-            complaints = await Complaint.find({})
-                .populate('raisedBy', 'name')
-                .populate('assignedTo', 'name')
-                .populate('flat', 'flatNumber')
-                .populate('assignedBuilding', 'name');
-        }
-
-        res.status(200).json(complaints);
-    } catch(error) {
-        next(error);
+    // RESIDENT → complaints of their flat
+    if (userRole === "resident") {
+      complaints = await Complaint.find({ raisedBy: userId })
+        .populate("flat", "flatNumber")
+        .populate("building", "name");
     }
+
+    // MANAGER → complaints of their buildings
+    else if (userRole === "manager") {
+      const buildings = await Building.find({ manager: userId });
+      const buildingIds = buildings.map((b) => b._id);
+
+      complaints = await Complaint.find({
+        building: { $in: buildingIds },  // ✅ IMPORTANT
+      })
+        .populate("raisedBy", "name")
+        .populate("flat", "flatNumber");
+    }
+
+    // ADMIN → all complaints
+    else if (userRole === "admin") {
+      complaints = await Complaint.find({})
+        .populate("raisedBy", "name")
+        .populate("flat", "flatNumber")
+        .populate("building", "name");
+    }
+
+    res.status(200).json(complaints);
+  } catch (error) {
+    next(error);
+  }
 };
 
 /**
