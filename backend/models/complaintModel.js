@@ -28,7 +28,7 @@ const complaintSchema = new mongoose.Schema(
         },
         building: {
             type: mongoose.Schema.Types.ObjectId,
-            required: true,
+            required: false,
             ref: 'Building',
         },
         flat: {
