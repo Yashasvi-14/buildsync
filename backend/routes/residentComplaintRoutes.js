@@ -8,18 +8,9 @@ router.post(
   "/",
   protect,
   authorize("resident"),
-  async (req, res, next) => {
-    // For now, assign complaints to the first flat the resident belongs to
-    const Flat = (await import("../models/flatModel.js")).default;
-    const flat = await Flat.findOne({ resident: req.user._id });
-
-    if (!flat) {
-      return res.status(400).json({
-        message: "You are not assigned to any flat. Ask manager to assign you.",
-      });
-    }
-
-    req.params.flatId = flat._id.toString();
+  (req, res, next) => {
+    // TEMP DEMO FIX: skip flat assignment
+    req.params.flatId = null;
     return raiseComplaint(req, res, next);
   }
 );
