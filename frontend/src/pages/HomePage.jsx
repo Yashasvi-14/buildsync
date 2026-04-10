@@ -66,7 +66,7 @@ const HomePage = () => {
     e.preventDefault();
     try {
       await API.post(
-        "/complaints",
+        "/flats/dummy/complaints",
         { title, description },
         {
           headers: { Authorization: `Bearer ${token}` },

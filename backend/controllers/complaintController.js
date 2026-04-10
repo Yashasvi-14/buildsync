@@ -18,22 +18,27 @@ export const raiseComplaint = async(req, res, next) => {
             return res.status(400).json({message: 'Title and description are required'});
         }
 
-        const flat = await Flat.findById(flatId);
-        if(!flat){
-            return res.status(404).json({ message: 'Flat not found'});
-        }
+        
+        let flat = null;
 
-        if(flat.resident.toString() !== residentId.toString()){
-            return res.status(403).json({message: 'You can only raise complaints for your own flat'});
-        }
+if (flatId) {
+    flat = await Flat.findById(flatId);
+}
+
+       // TEMP: allow demo without strict flat ownership
+//if (flat.resident && flat.resident.toString() !== residentId.toString()) {
+   // return res.status(403).json({
+    //    message: 'You can only raise complaints for your own flat'
+  //  });
+//}
 
         const complaint = await Complaint.create({
             title,
             description,
             priority,
             raisedBy: residentId,
-            flat: flatId,
-            building: flat.building,
+            flat: null,
+            building: flat?.building || null,
         });
 
         const populatedComplaint = await Complaint.findById(complaint._id)
