@@ -33,7 +33,7 @@ const complaintSchema = new mongoose.Schema(
         },
         flat: {
             type: mongoose.Schema.Types.ObjectId,
-            required: true,
+            required: false,
             ref: 'Flat',
         },
         assignedTo: {
