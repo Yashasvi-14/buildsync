@@ -8,12 +8,21 @@ import { v2 as cloudinary } from 'cloudinary';
  * @route   POST /api/users/register
  * @access  Public
  */
+const PUBLIC_REGISTER_ROLES = ["resident", "staff"];
+
 export const registerUser = async (req, res, next) => {
     try{
         const { name, email, password, role, buildingCode }=req.body;
 
         if(!name || !email || !password) {
             return res.status(400).json({message: "Please enter all fields"});
+        }
+
+        const requestedRole = role || "resident";
+        if (!PUBLIC_REGISTER_ROLES.includes(requestedRole)) {
+            return res.status(403).json({
+                message: "Only residents and staff can self-register. Admin and manager accounts must be created by an administrator.",
+            });
         }
 
         const userExists = await User.findOne({email});
@@ -25,27 +34,23 @@ export const registerUser = async (req, res, next) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // If user is staff or resident, buildingCode is required
-        let pendingBuilding = null;
-        if (role === "staff" || role === "resident") {
-            if (!buildingCode) {
-                return res.status(400).json({ message: "Building code is required" });
-            }
-            const building = await Building.findOne({ buildingCode: buildingCode.toUpperCase() });
-            if (!building) {
-                return res.status(400).json({ message: "Invalid building code" });
-            }
-            pendingBuilding = building._id;
+        // buildingCode is required for all public registrations
+        if (!buildingCode) {
+            return res.status(400).json({ message: "Building code is required" });
         }
-
+        const building = await Building.findOne({ buildingCode: buildingCode.toUpperCase() });
+        if (!building) {
+            return res.status(400).json({ message: "Invalid building code" });
+        }
+        const pendingBuilding = building._id;
 
         const newUser = await User.create({
             name,
             email,
             password: hashedPassword,
-            role: role || "resident",
+            role: requestedRole,
             pendingBuilding,
-            isApproved: role === "admin" || role ==="manager"? true:false,
+            isApproved: false,
         });
 
         if(newUser) {
@@ -80,23 +85,29 @@ export const loginUser = async (req,res,next) => {
 
         const user = await User.findOne({ email });
 
-        if(user && (await bcrypt.compare(password, user.password))) {
-            const token = jwt.sign(
-                { userId: user._id },
-                process.env.JWT_SECRET,
-                { expiresIn: '30d'}
-            );
-
-            res.status(200).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                token: token,
-            });
-        } else {
-            res.status(401).json({message: 'Invalid credentials'});
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(401).json({ message: "Invalid credentials" });
         }
+
+        if (!user.isApproved) {
+            return res.status(403).json({
+                message: "Your account is pending approval. Please wait for your building manager or admin to approve you.",
+            });
+        }
+
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: "30d" }
+        );
+
+        res.status(200).json({
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            token: token,
+        });
     } catch(error) {
         next(error);
     }
@@ -160,10 +171,23 @@ export const uploadProfilePictures = async (req, res, next) => {
  * @access  Private (Admin, Manager)
  */
 export const getPendingUsers = async (req, res, next) => {
-    try{
-        const users=await User.find({ isApproved: false}).populate("pendingBuilding", "name");
+    try {
+        let filter = { isApproved: false };
+
+        if (req.user.role === "manager") {
+            const managedBuildings = await Building.find({ manager: req.user._id });
+            const buildingIds = managedBuildings.map((b) => b._id);
+
+            filter = {
+                isApproved: false,
+                role: { $in: ["resident", "staff"] },
+                pendingBuilding: { $in: buildingIds },
+            };
+        }
+
+        const users = await User.find(filter).populate("pendingBuilding", "name buildingCode");
         res.json(users);
-    } catch(error) {
+    } catch (error) {
         next(error);
     }
 };
@@ -173,12 +197,42 @@ export const getPendingUsers = async (req, res, next) => {
  * @route   PATCH /api/admin/approve-user/:id
  * @access  Private (Admin, Manager)
  */
-export const approveUser = async(req, res, next) => {
-    try{
+export const approveUser = async (req, res, next) => {
+    try {
         const user = await User.findById(req.params.id);
 
-        if(!user) {
-            return res.status(404).json({ message: "User not found"});
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.isApproved) {
+            return res.status(400).json({ message: "User is already approved" });
+        }
+
+        if (req.user.role === "manager") {
+            if (!["resident", "staff"].includes(user.role)) {
+                return res.status(403).json({
+                    message: "Managers can only approve residents and staff",
+                });
+            }
+
+            const managedBuildings = await Building.find({ manager: req.user._id });
+            const buildingIds = managedBuildings.map((b) => b._id.toString());
+
+            if (
+                !user.pendingBuilding ||
+                !buildingIds.includes(user.pendingBuilding.toString())
+            ) {
+                return res.status(403).json({
+                    message: "You can only approve users for buildings you manage",
+                });
+            }
+        }
+
+        if (req.user.role === "admin" && user.role === "admin") {
+            return res.status(403).json({
+                message: "Admin accounts cannot be approved through this endpoint",
+            });
         }
 
         user.isApproved = true;
@@ -187,8 +241,8 @@ export const approveUser = async(req, res, next) => {
 
         await user.save();
 
-        res.json({ message: "User approved successfully"});
-    } catch(error) {
+        res.json({ message: "User approved successfully", userId: user._id });
+    } catch (error) {
         next(error);
     }
 };

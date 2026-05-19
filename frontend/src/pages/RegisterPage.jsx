@@ -44,7 +44,7 @@ const RegisterPage = () => {
             <option value="staff">Staff</option>
           </select>
 
-          <input name="buildingCode" placeholder="Building Code" onChange={handleChange} className="w-full p-2 border rounded" />
+          <input name="buildingCode" placeholder="Building Code" onChange={handleChange} className="w-full p-2 border rounded" required />
 
           <button className="w-full bg-blue-600 text-white py-2 rounded">
             Register

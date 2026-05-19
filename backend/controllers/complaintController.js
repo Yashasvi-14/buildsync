@@ -93,7 +93,15 @@ export const getComplaints = async (req, res, next) => {
         .populate("building", "name");
     }
 
-    res.status(200).json(complaints);
+    // STAFF → complaints assigned to them
+    else if (userRole === "staff") {
+      complaints = await Complaint.find({ assignedTo: userId })
+        .populate("raisedBy", "name")
+        .populate("flat", "flatNumber")
+        .populate("building", "name");
+    }
+
+    res.status(200).json(complaints ?? []);
   } catch (error) {
     next(error);
   }

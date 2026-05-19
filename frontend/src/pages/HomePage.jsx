@@ -18,7 +18,7 @@ const HomePage = () => {
       const res = await API.get("/complaints", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setComplaints(res.data);
+      setComplaints(Array.isArray(res.data) ? res.data : []);
     } catch (error) {
       console.error("Failed to fetch complaints", error);
     }
