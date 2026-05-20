@@ -5,40 +5,40 @@ import User from "../models/User.js";
 
 /**
  * @desc    Raise a new complaint for a flat
- * @route   POST /api/flats/:flatId/complaints
+ * @route   POST /api/complaints  OR  POST /api/buildings/:buildingId/flats/:flatId/complaints
  * @access  Private (Resident only)
  */
-export const raiseComplaint = async(req, res, next) => {
+export const raiseComplaint = async (req, res, next) => {
     try {
         const { flatId } = req.params;
-        const{ title, description, priority} = req.body;
+        const { title, description, priority } = req.body;
         const residentId = req.user._id;
 
-        if(!title || !description) {
-            return res.status(400).json({message: 'Title and description are required'});
+        if (!title || !description) {
+            return res.status(400).json({ message: "Title and description are required" });
         }
 
-        
-        let flat = null;
+        const flat = await Flat.findOne({ resident: residentId });
 
-if (flatId) {
-    flat = await Flat.findById(flatId);
-}
+        if (!flat) {
+            return res.status(400).json({
+                message: "You must be assigned to a flat before raising complaints",
+            });
+        }
 
-       // TEMP: allow demo without strict flat ownership
-//if (flat.resident && flat.resident.toString() !== residentId.toString()) {
-   // return res.status(403).json({
-    //    message: 'You can only raise complaints for your own flat'
-  //  });
-//}
+        if (flatId && flat._id.toString() !== flatId.toString()) {
+            return res.status(403).json({
+                message: "You can only raise complaints for your own flat",
+            });
+        }
 
         const complaint = await Complaint.create({
             title,
             description,
             priority,
             raisedBy: residentId,
-            flat: null,
-            building: flat?.building || null,
+            flat: flat._id,
+            building: flat.building,
         });
 
         const populatedComplaint = await Complaint.findById(complaint._id)
@@ -70,7 +70,8 @@ export const getComplaints = async (req, res, next) => {
     if (userRole === "resident") {
       complaints = await Complaint.find({ raisedBy: userId })
         .populate("flat", "flatNumber")
-        .populate("building", "name");
+        .populate("building", "name")
+        .populate("assignedTo", "name");
     }
 
     // MANAGER → complaints of their buildings
@@ -82,7 +83,8 @@ export const getComplaints = async (req, res, next) => {
         building: { $in: buildingIds },  // ✅ IMPORTANT
       })
         .populate("raisedBy", "name")
-        .populate("flat", "flatNumber");
+        .populate("flat", "flatNumber")
+        .populate("assignedTo", "name");
     }
 
     // ADMIN → all complaints
@@ -90,7 +92,8 @@ export const getComplaints = async (req, res, next) => {
       complaints = await Complaint.find({})
         .populate("raisedBy", "name")
         .populate("flat", "flatNumber")
-        .populate("building", "name");
+        .populate("building", "name")
+        .populate("assignedTo", "name");
     }
 
     // STAFF → complaints assigned to them
@@ -98,7 +101,8 @@ export const getComplaints = async (req, res, next) => {
       complaints = await Complaint.find({ assignedTo: userId })
         .populate("raisedBy", "name")
         .populate("flat", "flatNumber")
-        .populate("building", "name");
+        .populate("building", "name")
+        .populate("assignedTo", "name");
     }
 
     res.status(200).json(complaints ?? []);
