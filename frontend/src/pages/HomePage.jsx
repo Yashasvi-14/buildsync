@@ -77,6 +77,7 @@ const HomePage = () => {
       fetchComplaints();
     } catch (error) {
       console.error("Failed to raise complaint", error);
+      alert(error.response?.data?.message || "Failed to raise complaint");
     }
   };
 
