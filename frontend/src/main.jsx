@@ -12,6 +12,7 @@ import HomePage from './pages/HomePage.jsx';
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from './pages/LoginPage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
+import BuildingsPage from './pages/BuildingsPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import PrivateRoute from './components/PrivateRoute.jsx';
 
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
               {
                 path: 'users',
                 element: <UsersPage />,
+              },
+              {
+                path: 'buildings',
+                element: <BuildingsPage />,
               },
               {
                 path: "/profile",

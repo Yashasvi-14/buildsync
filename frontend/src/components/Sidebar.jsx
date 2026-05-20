@@ -1,11 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../store/authSlice";
-import { Home, User, LogOut, Users } from 'lucide-react';
+import { Home, User, Users, Building2 } from 'lucide-react';
 
 const Sidebar = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { user } = useSelector((state) => state.auth);
+    const canManageBuildings =
+      user?.role === "manager" || user?.role === "admin";
 
     const handleLogout = () => {
         dispatch(logout());
@@ -31,6 +34,15 @@ const Sidebar = () => {
             <Users className="w-5 h-5" />
             <span className="mx-4 font-medium">Users</span>
           </Link>
+          {canManageBuildings && (
+            <Link
+              to="/buildings"
+              className="flex items-center px-4 py-2 mt-5 text-gray-600 rounded-md hover:bg-gray-100"
+            >
+              <Building2 className="w-5 h-5" />
+              <span className="mx-4 font-medium">Buildings</span>
+            </Link>
+          )}
         </nav>
 
         <button
